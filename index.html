@@ -21,6 +21,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
     <script>
 /**
  * Firebase config block.
@@ -36,7 +37,12 @@ var firebaseConfig = {
     measurementId: "G-NEC61B8R3Y"
   };
 
-firebase.initializeApp(firebaseConfig);
+var app = firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore(app);
+var map;
+var circles = [];
+var ids = [];
+console.log(db);
 
 /**
  * Data object to be written to Firebase.
@@ -89,7 +95,7 @@ function makeInfoBox(controlDiv, map) {
        * Creates a map object with a click listener and a heatmap.
        */
       function initMap() {
-        var map = new google.maps.Map(document.getElementById('map'), {
+       	map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -30.056931, lng: -51.1899153},
           zoom: 13,
           styles: [{
@@ -104,45 +110,55 @@ function makeInfoBox(controlDiv, map) {
           streetViewControl: false,
         });
 
-        fetchPins(-30.056931, -51.1899153, 20000.0);
         // Create the DIV to hold the control and call the makeInfoBox() constructor
         // passing in this DIV.
         var infoBoxDiv = document.createElement('div');
         makeInfoBox(infoBoxDiv, map);
         map.controls[google.maps.ControlPosition.TOP_CENTER].push(infoBoxDiv);
 
-        map.addListener('dragend', function(e) {
-          fetchPins(e.latLng.lat(), e.latLng.lng(), 100.0);
+        map.addListener('bounds_changed', function(e) {
+          fetchPins(map.getBounds());
         });
       }
 
-      function fetchPins(latitude, longitude, zoom) {
+      function fetchPins(bounds) {
+      	console.log(bounds);
+        var lesserGeopoint = new firebase.firestore.GeoPoint(bounds.Ya.i, bounds.Sa.i);
+        var greaterGeopoint = new firebase.firestore.GeoPoint(bounds.Ya.j, bounds.Sa.j);
+        console.log(lesserGeopoint);
+        console.log(greaterGeopoint);
+  		const settings = {/* your settings... */ timestampsInSnapshots: true};
+  		db.settings(settings);
+      	db.collection("pins").where('reportLocation', '>=', lesserGeopoint).where('reportLocation', '<=', greaterGeopoint).get().then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                	if (!ids.includes(doc.id)) {
+                		ids.push(doc.id);
+                		console.log(doc.id);
+                    var lat = doc.data()['reportLocation']._lat;
+                    var lng = doc.data()['reportLocation']._long;
+                    var wellCircle = new google.maps.Circle({
+        				strokeColor: '#000000',
+        				strokeOpacity: 0.8,
+        				strokeWeight: 2,
+        				fillColor: '#000000',
+        				fillOpacity: 0.25,
+        				map: map,
+        				center: new google.maps.LatLng(lat, lng),
+        				radius: 90
+    				});
+                	}
+                   
 
-      	var lat = 0.0144927536231884;
-        var lon = 0.0181818181818182;
-
-        var lowerLat = latitude - (lat * zoom);
-        var lowerLon = longitude - (lon * zoom);
-
-        var greaterLat = latitude + (lat * zoom);
-        var greaterLon = longitude + (lon * zoom);
-
-        var lesserGeopoint = new firebase.firestore.GeoPoint(lowerLat, lowerLon);
-        var greaterGeopoint = new firebase.firestore.GeoPoint(greaterLat, greaterLon);
-
-      	var docRef = db.collection("pins").where('reportLocation', '>', lesserGeopoint).where('reportLocation', '<', greaterGeopoint);
-
-		docRef.get().then(function(doc) {
-    	if (doc.exists) {
-        	console.log("Document data:", doc.data());
-    	} else {
-        // doc.data() will be undefined in this case
-        	console.log("No such document!");
-    	}
-		}).catch(function(error) {
-    		console.log("Error getting document:", error);
-		});
+                });
+            });
       }
+
+      function removeAllcircles() {
+  		for(var i in circles) {
+    		circles[i].setMap(null);
+  		}
+  		circles = []; // this is if you really want to remove them, so you reset the variable.
+	}
 
       /**
        * Set up a Firebase with deletion on clicks older than expiryMs
