@@ -104,6 +104,7 @@ function makeInfoBox(controlDiv, map) {
           streetViewControl: false,
         });
 
+        fetchPins(-30.056931, -51.1899153, 20000.0);
         // Create the DIV to hold the control and call the makeInfoBox() constructor
         // passing in this DIV.
         var infoBoxDiv = document.createElement('div');
@@ -111,8 +112,6 @@ function makeInfoBox(controlDiv, map) {
         map.controls[google.maps.ControlPosition.TOP_CENTER].push(infoBoxDiv);
 
         map.addListener('dragend', function(e) {
-          data.lat = e.latLng.lat();
-          data.lng = e.latLng.lng();
           fetchPins(e.latLng.lat(), e.latLng.lng(), 100.0);
         });
       }
