@@ -127,8 +127,8 @@ function makeInfoBox(controlDiv, map) {
         var greaterLat = latitude + (lat * zoom);
         var greaterLon = longitude + (lon * zoom);
 
-        var lesserGeopoint = new firebase.firestore.GeoPoint(lowerLat, lowerLon);
-        var greaterGeopoint = new firebase.firestore.GeoPoint(greaterLat, greaterLon);
+        var lesserGeopoint = new Firestore.GeoPoint(lowerLat, lowerLon);
+        var greaterGeopoint = new Firestore.GeoPoint(greaterLat, greaterLon);
 
       	var docRef = db.collection("pins").where('reportLocation', '>', lesserGeopoint).where('reportLocation', '<', greaterGeopoint);
 
