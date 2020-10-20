@@ -118,17 +118,17 @@ function makeInfoBox(controlDiv, map) {
 
       function fetchPins(latitude, longitude, zoom) {
 
-      	var lat = 0.0144927536231884
-        var lon = 0.0181818181818182
+      	var lat = 0.0144927536231884;
+        var lon = 0.0181818181818182;
 
-        var lowerLat = latitude - (lat * zoom)
-        var lowerLon = longitude - (lon * zoom)
+        var lowerLat = latitude - (lat * zoom);
+        var lowerLon = longitude - (lon * zoom);
 
-        var greaterLat = latitude + (lat * zoom)
-        var greaterLon = longitude + (lon * zoom)
+        var greaterLat = latitude + (lat * zoom);
+        var greaterLon = longitude + (lon * zoom);
 
-        var lesserGeopoint = firebase.firestore.GeoPoint(lowerLat, lowerLon)
-        var greaterGeopoint = firebase.firestore.GeoPoint(greaterLat, greaterLon)
+        var lesserGeopoint = new firebase.firestore.GeoPoint(lowerLat, lowerLon);
+        var greaterGeopoint = new firebase.firestore.GeoPoint(greaterLat, greaterLon);
 
       	var docRef = db.collection("pins").where('reportLocation', '>', lesserGeopoint).where('reportLocation', '<', greaterGeopoint);
 
