@@ -121,11 +121,11 @@ function makeInfoBox(controlDiv, map) {
       	var lat = 0.0144927536231884
         var lon = 0.0181818181818182
 
-        var lowerLat = latitude - (lat * distance)
-        var lowerLon = longitude - (lon * distance)
+        var lowerLat = latitude - (lat * zoom)
+        var lowerLon = longitude - (lon * zoom)
 
-        var greaterLat = latitude + (lat * distance)
-        var greaterLon = longitude + (lon * distance)
+        var greaterLat = latitude + (lat * zoom)
+        var greaterLon = longitude + (lon * zoom)
 
         var lesserGeopoint = GeoPoint(lowerLat, lowerLon)
         var greaterGeopoint = GeoPoint(greaterLat, greaterLon)
